@@ -246,7 +246,7 @@ class Wall(pg.sprite.Sprite): # 追加機能５
     防御壁に関するクラス
     こうかとんの前に防御壁を出現させ，着弾を防ぐ
     """
-    def __init__(self, bird: Bird):
+    def __init__(self, bird: Bird, life: int):
         """
         防御壁Surfaceを生成する
         引数 bird：防御壁を出現させるこうかとん
@@ -257,7 +257,7 @@ class Wall(pg.sprite.Sprite): # 追加機能５
         self.image = pg.Surface((w, h)) # 防御壁の大きさ
         self.image.fill((0, 255, 255))  # 防御壁の色
         self.rect = self.image.get_rect() # 防御壁のRect
-        self.time = 40  # 防御壁の持続時間（フレーム数）
+        self.life = 40  # 防御壁の持続時間（フレーム数）
 
         between = 50  # こうかとんから防御壁までの距離
         self.rect.centerx = bird.rect.centerx + between # 防御壁のx座標を設定
@@ -265,9 +265,9 @@ class Wall(pg.sprite.Sprite): # 追加機能５
 
     def update(self):
         #400フレームで防御壁を消す
-        self.time -= 1
-        if self.time <= 0:
-            self.kill()
+        self.life -= 1 # 防御壁の持続時間を1減算
+        if self.life <= 0: # 持続時間が0以下になったら
+            self.kill() # 防御壁を消す
 
         
 
@@ -318,9 +318,14 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
-        
+
         if key_lst[pg.K_s]:  # 「s」キー押下で防御壁発動
-            walls.add(Wall(bird))  # 防御壁を生成
+            walls.add(Wall(bird, 40))  # 防御壁を生成
+
+        for wall in walls:  # 防御壁と衝突した爆弾リスト
+            hit_bombs = pg.sprite.spritecollide(wall, bombs, True) # 防御壁と衝突した爆弾を取得
+            for bomb in hit_bombs: # 衝突した爆弾ごとに処理
+                exps.add(Explosion(bomb, 50))  # 爆発エフェクト
     
         bird.update(key_lst, screen)
         beams.update()
